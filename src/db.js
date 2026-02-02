@@ -39,6 +39,7 @@ function initSchema(db) {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       url TEXT,
+      profile_image TEXT,
       first_seen_at TEXT NOT NULL,
       last_seen_at TEXT NOT NULL
     );
@@ -119,14 +120,14 @@ export function upsertAgent(agent) {
   
   if (existing) {
     db.prepare(`
-      UPDATE agents SET name = ?, url = ?, last_seen_at = ?
+      UPDATE agents SET name = ?, url = ?, profile_image = ?, last_seen_at = ?
       WHERE id = ?
-    `).run(agent.name, agent.url, now, agent.id);
+    `).run(agent.name, agent.url, agent.profileImage || null, now, agent.id);
   } else {
     db.prepare(`
-      INSERT INTO agents (id, name, url, first_seen_at, last_seen_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(agent.id, agent.name, agent.url, now, now);
+      INSERT INTO agents (id, name, url, profile_image, first_seen_at, last_seen_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(agent.id, agent.name, agent.url, agent.profileImage || null, now, now);
   }
 }
 
@@ -180,7 +181,7 @@ export function saveScore(runId, agentId, sampleId, score) {
 export function getLatestScores() {
   const db = getDb();
   return db.prepare(`
-    SELECT s.*, a.name as agent_name, a.url as agent_url
+    SELECT s.*, a.name as agent_name, a.url as agent_url, a.profile_image
     FROM scores s
     JOIN agents a ON s.agent_id = a.id
     WHERE s.run_id = (SELECT MAX(id) FROM runs WHERE status = 'completed')

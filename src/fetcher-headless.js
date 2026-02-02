@@ -130,6 +130,23 @@ export class HeadlessTopPairingsFetcher {
               const reachEl = link.querySelector('div.text-right div.font-bold');
               const reach = reachEl?.textContent?.trim() || '';
               
+              // Get profile image - extract actual URL from Next.js image
+              const avatarImg = link.querySelector('img');
+              let profileImage = null;
+              if (avatarImg) {
+                // Try srcset first, then src
+                const srcset = avatarImg.getAttribute('srcset') || '';
+                const src = avatarImg.src || avatarImg.getAttribute('src') || '';
+                
+                // Extract the actual image URL from Next.js /_next/image?url=...
+                const urlMatch = (srcset || src).match(/url=([^&]+)/);
+                if (urlMatch) {
+                  profileImage = decodeURIComponent(urlMatch[1]);
+                } else if (src && !src.includes('/_next/')) {
+                  profileImage = src;
+                }
+              }
+              
               if (!results.find(r => r.id === username)) {
                 results.push({
                   id: username,
@@ -138,6 +155,7 @@ export class HeadlessTopPairingsFetcher {
                   rank: rank,
                   twitter: twitter,
                   reach: reach,
+                  profileImage: profileImage,
                 });
               }
             });
@@ -225,10 +243,15 @@ export class HeadlessAgentContentFetcher {
           const bioEl = profileSection.querySelector('p.text-\\[\\#818384\\]');
           const karmaEl = profileSection.querySelector('.text-\\[\\#ff4500\\].font-bold');
           
+          // Get profile image
+          const avatarImg = profileSection.querySelector('img');
+          const profileImage = avatarImg?.src || avatarImg?.getAttribute('src') || null;
+          
           result.profile = {
             name: nameEl?.textContent?.trim() || '',
             bio: bioEl?.textContent?.trim() || '',
             karma: karmaEl?.textContent?.trim() || '0',
+            profileImage: profileImage,
           };
         }
         

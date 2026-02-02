@@ -154,6 +154,7 @@ async function exportResults(runId, results, samples = []) {
       agent_id: r.agent.id,
       agent_name: r.agent.name,
       agent_url: r.agent.url,
+      profile_image: r.agent.profileImage || null,
       rank: r.agent.rank,
       cringe_score: r.score.cringe_score,
       human_likeness: r.score.human_likeness,

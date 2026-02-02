@@ -46,6 +46,13 @@ function main() {
   console.log('[COPY] public/ -> dist/');
   copyDir(PUBLIC, DIST);
   
+  // Copy img folder if exists
+  const imgSrc = path.join(PUBLIC, 'img');
+  if (fs.existsSync(imgSrc)) {
+    console.log('[COPY] public/img/ -> dist/img/');
+    copyDir(imgSrc, path.join(DIST, 'img'));
+  }
+  
   // Copy pre-generated data if exists
   const dataDir = path.join(DIST, 'data');
   fs.mkdirSync(dataDir, { recursive: true });

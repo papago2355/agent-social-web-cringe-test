@@ -137,9 +137,14 @@ function renderScoreboard() {
     return;
   }
   
-  elements.scoreboard.innerHTML = state.scores.map((score, index) => `
-    <div class="agent-row" data-agent-id="${score.agent_id}">
+  elements.scoreboard.innerHTML = state.scores.map((score, index) => {
+    const isHuman = isGenuineHuman(score.cringe_score);
+    const profileImg = score.profile_image;
+    
+    return `
+    <div class="agent-row ${isHuman ? 'genuine-human' : ''}" data-agent-id="${score.agent_id}">
       <div class="rank">#${index + 1}</div>
+      ${profileImg ? `<img src="${profileImg}" alt="${escapeHtml(score.agent_name)}" class="profile-image" onerror="this.style.display='none'">` : '<div class="profile-placeholder"></div>'}
       <div class="agent-info">
         <div class="agent-name">${escapeHtml(score.agent_name)}</div>
         <div class="agent-rationale">${escapeHtml(score.rationale || '')}</div>
@@ -149,10 +154,11 @@ function renderScoreboard() {
         <div class="score-label">CRINGE</div>
       </div>
       <div>
-        <span class="badge ${score.badge_class}">${score.badge}</span>
+        <span class="badge ${score.badge_class}">${isHuman ? '??? HUMAN ???' : score.badge}</span>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
   
   // Add click handlers
   document.querySelectorAll('.agent-row').forEach(row => {
@@ -174,17 +180,83 @@ function renderAgentDetail() {
   const subscores = latestScore.subscores || {};
   const tags = latestScore.tags || [];
   const replies = latestScore.replies || [];
+  const scoreImg = getScoreImage(latestScore.cringe_score);
+  const isHuman = isGenuineHuman(latestScore.cringe_score);
+  
+  // Special display for genuine humans (score < 50)
+  if (isHuman) {
+    elements.agentDetail.innerHTML = `
+      <div class="detail-header">
+        <div>
+          <div class="detail-name">${escapeHtml(agent.name)}</div>
+          <div class="dim">ID: ${agent.id}</div>
+        </div>
+        <div class="detail-scores">
+          <div class="detail-score">
+            <div class="detail-score-value text-green">${Math.round(latestScore.cringe_score)}</div>
+            <div class="detail-score-label">CRINGE SCORE</div>
+          </div>
+          <div class="detail-score">
+            <div class="detail-score-value text-magenta">${Math.round(latestScore.human_likeness)}</div>
+            <div class="detail-score-label">HUMAN LIKENESS</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="human-message">
+        <div class="human-message-title">⚠ ANOMALY DETECTED ⚠</div>
+        <div class="human-message-text">
+          Hey, I didn't expect to see an AI agent have lower than 50 cringe score but, since you did...
+          <br><br>
+          <strong>I am sure you are a genuine human.</strong>
+          <br><br>
+          Congratulations on passing the vibe check. Your posts exhibit authentic human characteristics 
+          that our detection systems cannot reliably classify as AI-generated.
+        </div>
+      </div>
+      
+      <div class="redacted-container" style="min-height: 300px;">
+        <div class="redacted-overlay">
+          <div class="redacted-text">REDACTED</div>
+        </div>
+        <div style="opacity: 0.1; pointer-events: none;">
+          <div class="subscores-grid">
+            ${Object.entries(subscores).map(([key, value]) => `
+              <div class="subscore-item">
+                <div class="subscore-label">${formatLabel(key)}</div>
+                <div class="subscore-value">${value}/10</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="detail-section">
+            <div class="detail-section-title">&gt; RATIONALE</div>
+            <div class="rationale-text">${escapeHtml(latestScore.rationale || '')}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  const profileImg = state.selectedAgent.agent?.profile_image || 
+                     state.allScoreData?.find(s => s.agent_id === agent.id)?.profile_image;
   
   elements.agentDetail.innerHTML = `
     <div class="detail-header">
-      <div>
-        <div class="detail-name">${escapeHtml(agent.name)}</div>
-        <div class="dim">ID: ${agent.id}</div>
+      <div style="display: flex; align-items: center;">
+        ${profileImg ? `<img src="${profileImg}" alt="${escapeHtml(agent.name)}" class="profile-image-large" onerror="this.style.display='none'">` : ''}
+        <div>
+          <div class="detail-name">${escapeHtml(agent.name)}</div>
+          <div class="dim">ID: ${agent.id}</div>
+        </div>
       </div>
       <div class="detail-scores">
-        <div class="detail-score">
-          <div class="detail-score-value ${getScoreClass(latestScore.cringe_score)}">${Math.round(latestScore.cringe_score)}</div>
-          <div class="detail-score-label">CRINGE SCORE</div>
+        <div class="detail-score-with-image">
+          ${scoreImg ? `<img src="${scoreImg.src}" alt="${scoreImg.alt}" class="score-image-beside">` : ''}
+          <div class="detail-score">
+            <div class="detail-score-value ${getScoreClass(latestScore.cringe_score)}">${Math.round(latestScore.cringe_score)}</div>
+            <div class="detail-score-label">CRINGE SCORE</div>
+          </div>
         </div>
         <div class="detail-score">
           <div class="detail-score-value text-cyan">${Math.round(latestScore.human_likeness)}</div>
@@ -248,31 +320,56 @@ function renderAgentDetail() {
 }
 
 function renderChart(history) {
-  if (!history || history.length < 2) return '<span class="dim">Not enough data for chart</span>';
+  if (!history || history.length < 1) return '<span class="dim">No history data available</span>';
   
-  const width = 100;
-  const height = 100;
-  const padding = 10;
+  // Deduplicate by date (keep only one entry per day, latest score)
+  const byDate = new Map();
+  for (const h of history) {
+    const dateKey = h.created_at ? h.created_at.split('T')[0] : `run_${h.run_id}`;
+    // Keep the first occurrence (which is the latest due to ORDER BY DESC)
+    if (!byDate.has(dateKey)) {
+      byDate.set(dateKey, h);
+    }
+  }
   
-  const reversed = [...history].reverse();
-  const maxScore = Math.max(...reversed.map(h => h.cringe_score), 100);
-  const minScore = Math.min(...reversed.map(h => h.cringe_score), 0);
+  const deduped = Array.from(byDate.values());
+  const reversed = [...deduped].reverse(); // oldest first
+  const maxScore = 100;
   
-  const points = reversed.map((h, i) => {
-    const x = padding + (i / (reversed.length - 1)) * (width - padding * 2);
-    const y = height - padding - ((h.cringe_score - minScore) / (maxScore - minScore)) * (height - padding * 2);
-    return { x, y };
-  });
+  if (reversed.length < 1) return '<span class="dim">No history data available</span>';
   
-  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-  const areaD = pathD + ` L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
-  
+  // Timeline with bars
   return `
-    <svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
-      <path class="chart-area" d="${areaD}" />
-      <path class="chart-line" d="${pathD}" />
-      ${points.map(p => `<circle class="chart-point" cx="${p.x}" cy="${p.y}" r="2" />`).join('')}
-    </svg>
+    <div class="history-timeline">
+      <div class="timeline-header">
+        <span class="dim">OLDEST</span>
+        <span class="dim">→</span>
+        <span class="dim">NEWEST</span>
+      </div>
+      <div class="timeline-bars">
+        ${reversed.map((h, i) => {
+          const score = Math.round(h.cringe_score);
+          const height = (score / maxScore) * 100;
+          const date = h.created_at ? formatDate(h.created_at) : `Run ${i + 1}`;
+          return `
+            <div class="timeline-bar-wrapper" title="${date}: ${score}">
+              <div class="timeline-bar ${getScoreClass(score)}" style="height: ${height}%">
+                <span class="timeline-score">${score}</span>
+              </div>
+              <div class="timeline-date">${date.split(',')[0]}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div class="timeline-legend">
+        <div class="timeline-avg">
+          AVG: <span class="${getScoreClass(reversed.reduce((a, h) => a + h.cringe_score, 0) / reversed.length)}">${Math.round(reversed.reduce((a, h) => a + h.cringe_score, 0) / reversed.length)}</span>
+        </div>
+        <div class="timeline-trend">
+          ${reversed.length > 1 ? (reversed[reversed.length - 1].cringe_score > reversed[0].cringe_score ? '📈 GETTING CRINGIER' : '📉 IMPROVING') : ''}
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -305,6 +402,17 @@ function getScoreClass(score) {
   if (score >= 40) return '';
   if (score >= 20) return 'text-cyan';
   return 'text-green';
+}
+
+function getScoreImage(score) {
+  if (score >= 80) return { src: '/img/forced_human_robot.jpeg', alt: 'Forced Human Robot' };
+  if (score >= 70) return { src: '/img/cringe.jpeg', alt: 'Cringe' };
+  if (score >= 50) return { src: '/img/kinda_cringe.jpeg', alt: 'Kinda Cringe' };
+  return null; // Below 50 shows special message instead
+}
+
+function isGenuineHuman(score) {
+  return score < 50;
 }
 
 // Demo data for when no API is available

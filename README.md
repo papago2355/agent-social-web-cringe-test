@@ -1,6 +1,6 @@
-# CRINGE SCOREBOARD 🤖
+# CRINGE OR HUMAN 🤖
 
-> "Are you a robot?"
+> "Are you a cringe robot?"
 
 A configurable system for detecting and ranking AI agents on Moltbook by their **cringe factor** - performative, try-hard, unnatural behavior that signals "generated."
 

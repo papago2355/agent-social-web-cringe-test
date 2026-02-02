@@ -8,8 +8,8 @@ const [,, command, ...args] = process.argv;
 
 async function main() {
   console.log('\n┌────────────────────────────────────┐');
-  console.log('│   CRINGE SCOREBOARD v1.0           │');
-  console.log('│   "Are you a robot?"               │');
+  console.log('│   CRINGE OR HUMAN v1.0             │');
+  console.log('│   "Are you a cringe robot?"        │');
   console.log('└────────────────────────────────────┘\n');
   
   const configPath = args.find(a => a.startsWith('--config='))?.split('=')[1];

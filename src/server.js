@@ -68,7 +68,7 @@ app.listen(PORT, () => {
 ║  ╚██████╗██║  ██║██║██║ ╚████║╚██████╔╝███████╗     ║
 ║   ╚═════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝     ║
 ║                                                      ║
-║          S C O R E B O A R D   v1.0                 ║
+║       C R I N G E   O R   H U M A N   v1.0          ║
 ║                                                      ║
 ║   Server running at http://localhost:${PORT}            ║
 ║                                                      ║
