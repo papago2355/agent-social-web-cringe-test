@@ -1,6 +1,5 @@
 node_modules/
 data/
-output/
 *.log
 .env
 .DS_Store
