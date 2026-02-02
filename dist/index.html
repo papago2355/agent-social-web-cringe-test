@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRINGE SCOREBOARD // ARE YOU A ROBOT?</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="crt-overlay"></div>
+  <div class="scanlines"></div>
+  
+  <div class="terminal">
+    <header class="header">
+      <pre class="ascii-title">
+ ██████╗██████╗ ██╗███╗   ██╗ ██████╗ ███████╗
+██╔════╝██╔══██╗██║████╗  ██║██╔════╝ ██╔════╝
+██║     ██████╔╝██║██╔██╗ ██║██║  ███╗█████╗  
+██║     ██╔══██╗██║██║╚██╗██║██║   ██║██╔══╝  
+╚██████╗██║  ██║██║██║ ╚████║╚██████╔╝███████╗
+ ╚═════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝
+      </pre>
+      <div class="subtitle">SCOREBOARD v1.0 // MOLTBOOK AGENT DETECTION SYSTEM</div>
+      <div class="tagline blink">&gt; ARE YOU A ROBOT? &lt;</div>
+    </header>
+    
+    <nav class="nav">
+      <button class="nav-btn active" data-view="scoreboard">[SCOREBOARD]</button>
+      <button class="nav-btn" data-view="agent">[AGENT DETAIL]</button>
+      <button class="nav-btn" data-view="about">[ABOUT]</button>
+    </nav>
+    
+    <main class="main">
+      <section id="scoreboard-view" class="view active">
+        <div class="section-header">
+          <span class="prompt">&gt;</span> TOP 10 HOTTEST AI AGENTS
+          <span class="cursor blink">_</span>
+        </div>
+        
+        <div class="loading" id="loading">
+          <span class="spinner">▓▒░</span> LOADING DATA...
+        </div>
+        
+        <div id="scoreboard" class="scoreboard"></div>
+        
+        <div class="legend">
+          <div class="legend-item"><span class="badge badge-cringe">CERTIFIED CRINGE</span> 80+</div>
+          <div class="legend-item"><span class="badge badge-kinda">KINDA CRINGE</span> 60-79</div>
+          <div class="legend-item"><span class="badge badge-mid">MID</span> 40-59</div>
+          <div class="legend-item"><span class="badge badge-human">SEEMS HUMAN</span> 20-39</div>
+          <div class="legend-item"><span class="badge badge-based">BASED</span> 0-19</div>
+        </div>
+      </section>
+      
+      <section id="agent-view" class="view">
+        <div class="section-header">
+          <span class="prompt">&gt;</span> AGENT ANALYSIS
+        </div>
+        <div id="agent-detail" class="agent-detail">
+          <p class="dim">Select an agent from the scoreboard to view details.</p>
+        </div>
+      </section>
+      
+      <section id="about-view" class="view">
+        <div class="section-header">
+          <span class="prompt">&gt;</span> SYSTEM INFO
+        </div>
+        <div class="about-content">
+          <pre>
+┌─────────────────────────────────────────────────────────┐
+│ CRINGE SCOREBOARD - AI Agent Detection System          │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ PURPOSE: Identify and rank AI agents by their          │
+│          "cringe factor" - performative, try-hard,     │
+│          unnatural behavior that signals "generated"   │
+│                                                         │
+│ METHODOLOGY:                                            │
+│   1. Crawl Top Pairings from Moltbook                  │
+│   2. Extract latest post + 10 replies per agent        │
+│   3. Score via LLM judge (OpenRouter)                  │
+│   4. Compute subscores across 6 dimensions             │
+│   5. Assign badge based on composite score             │
+│                                                         │
+│ DIMENSIONS:                                             │
+│   • Performative energy (forced hype/swagger)          │
+│   • Meme overuse (stale slang, awkward voice)          │
+│   • LLM tells ("as an AI...", sterile structure)       │
+│   • Context drift (off-topic replies)                  │
+│   • Repetition (same phrases, patterns)                │
+│   • Overexplaining (robotic politeness)                │
+│                                                         │
+│ VERSION: 1.0.0                                          │
+│ REFRESH: Daily at 06:00 UTC                            │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+          </pre>
+        </div>
+      </section>
+    </main>
+    
+    <footer class="footer">
+      <div class="status-bar">
+        <span id="status">READY</span>
+        <span class="separator">│</span>
+        <span id="last-update">LAST UPDATE: --</span>
+        <span class="separator">│</span>
+        <span id="agent-count">AGENTS: --</span>
+      </div>
+    </footer>
+  </div>
+  
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "cringe-scoreboard",
+  "version": "1.0.0",
+  "description": "Cringe Scoreboard for Moltbook - AI agent cringe detection",
+  "type": "module",
+  "scripts": {
+    "crawl": "node src/cli.js crawl",
+    "score": "node src/cli.js score",
+    "run": "node src/cli.js run",
+    "serve": "node src/server.js",
+    "dev": "node src/server.js --dev",
+    "build": "node scripts/build-static.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cheerio": "^1.0.0",
+    "express": "^4.18.2",
+    "js-yaml": "^4.1.0",
+    "node-fetch": "^3.3.2",
+    "playwright": "^1.40.0"
+  },
+  "devDependencies": {}
+}
